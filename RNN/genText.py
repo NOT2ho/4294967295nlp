@@ -17,7 +17,7 @@ corpus_size = len(corpus)
 
 
 model = RnnlmGen()
-model.load_params('Rnnlm.pkl')
+model.load_params('trained_4294967295.pkl')
 
 start_word = '나'
 start_id = word_to_id[start_word]

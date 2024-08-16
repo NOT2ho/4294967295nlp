@@ -16,15 +16,15 @@ batch_size = 20
 wordvec_size = 100
 hidden_size = 100  # RNN의 은닉 상태 벡터의 원소 수
 time_size = 35     # RNN을 펼치는 크기
-lr = 0.3
-max_epoch = 9
+lr = 0.31
+max_epoch = 1
 max_grad = 0.25
 
 
 
 # 학습 데이터 읽기
 
-data = open('corpus/4294967295.txt', 'rt', encoding='UTF8').read()
+data = open('corpus/private/total2.txt', 'rt', encoding='UTF8').read()
 words = ' '.join([w for w, t in Mecab().pos(data)])
 
 corpus, word_to_id, id_to_word = preprocess(words)
