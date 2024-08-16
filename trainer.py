@@ -63,6 +63,7 @@ class RnnlmTrainer:
                     total_loss, loss_count = 0, 0
 
             self.current_epoch += 1
+        return ppl
 
     def plot(self, ylim=None):
         x = np.arange(len(self.ppl_list))
