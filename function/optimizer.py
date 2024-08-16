@@ -30,7 +30,7 @@ class Adam:
             params[i] -= lr_t * self.m[i] / (np.sqrt(self.v[i]) + 1e-7)
             
 class SGD:
-    def __init__(self, lr=0.01):
+    def __init__(self, lr=0.1):
         self.lr = lr
         
     def update(self, params, grads):
