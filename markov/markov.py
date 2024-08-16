@@ -38,11 +38,12 @@ def calc_cfd(doc):
     #condition_pairs = (((w0, w1), w2) for w0, w1, w2 in ngrams)
     return nltk.ConditionalFreqDist(ngrams)
 
+doc = open('corpus/4294967295.txt', 'rt', encoding='UTF8').read()
 
 if __name__=='__main__':
-    initstr = u'나' 
+    initstr = random.choice([w for w, t in Mecab().pos(doc)])
 
-    doc = open('corpus/4294967295.txt', 'rt', encoding='UTF8').read()
+
     cfd = calc_cfd(doc)
 
     print(generate_sentence(cfd, initstr))
