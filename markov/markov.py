@@ -42,8 +42,6 @@ doc = open('corpus/4294967295.txt', 'rt', encoding='UTF8').read()
 
 if __name__=='__main__':
     initstr = random.choice([w for w, t in Mecab().pos(doc)])
-
-
     cfd = calc_cfd(doc)
 
     print(generate_sentence(cfd, initstr))
