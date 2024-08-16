@@ -17,8 +17,8 @@ class Rnnlm(BaseModel):
      [2] Using the Output Embedding to Improve Language Models (https://arxiv.org/abs/1608.05859)
      [3] Tying Word Vectors and Word Classifiers (https://arxiv.org/pdf/1611.01462.pdf)
     '''
-    def __init__(self, vocab_size=1899, wordvec_size=40,
-                 hidden_size=40, dropout_ratio=0.5):
+    def __init__(self, vocab_size=1899, wordvec_size=100,
+                 hidden_size=100, dropout_ratio=0.1):
         V, D, H = vocab_size, wordvec_size, hidden_size
         rn = np.random.randn
 

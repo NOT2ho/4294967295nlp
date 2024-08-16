@@ -10,7 +10,7 @@ from function.optimizer import *
 from preprocess.preprocess import preprocess
 from konlpy.tag import Mecab 
 
-def train(batch_size = 5, wordvec_size = 40, hidden_size = 40 , time_size = 4 , lr = 0.0082, max_epoch = 230, max_grad = 0.01):
+def train(batch_size = 10, wordvec_size = 100, hidden_size = 100 , time_size = 4 , lr = 0.28, max_epoch = 13, max_grad = 0.01):
     '''batch_size = 10
     wordvec_size = 400
     hidden_size = 400 

@@ -19,11 +19,11 @@ corpus_size = len(corpus)
 
 
 model = RnnlmGen()
-model.load_params('Rnnlm.pkl')
+model.load_params('trained_pure.pkl')
 
 start_word = random.choice([w for w, t in Mecab().pos(data)])
 start_id = word_to_id[start_word]
-skip_words = []
+skip_words = ['']
 skip_ids = [word_to_id[w] for w in skip_words]
 
 word_ids = model.generate(start_id, skip_ids)
@@ -32,7 +32,8 @@ word_ids = model.generate(start_id, skip_ids)
 regEx = re.compile('^J|^E|^X|^S')
 res = ''
 for i in [id_to_word[i] for i in word_ids]:
-    tp = mecab.pos(i[0])
+    tp = mecab.pos(i)
+    print(tp)
     tag = tp[0][1]
     if regEx.match(tag)==None:
         res += ' '+i
