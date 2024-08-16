@@ -1,4 +1,5 @@
 # coding: utf-8
+import random
 import re
 from konlpy.tag import Mecab 
 import sys
@@ -20,7 +21,7 @@ corpus_size = len(corpus)
 model = RnnlmGen()
 model.load_params('trained_4294967295.pkl')
 
-start_word = '나'
+start_word = random.choice([w for w, t in Mecab().pos(data)])
 start_id = word_to_id[start_word]
 skip_words = ['는']
 skip_ids = [word_to_id[w] for w in skip_words]
