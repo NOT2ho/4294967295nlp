@@ -9,4 +9,5 @@ def clip_grads(grads, max_norm):
     rate = max_norm / (total_norm + 1e-6)
     if rate < 1:
         for grad in grads:
+ #           print(grad[0])
             grad *= rate
