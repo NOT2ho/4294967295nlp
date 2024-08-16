@@ -25,7 +25,7 @@ class BaseModel:
 
         params = [p.astype(np.float16) for p in self.params]
         if GPU:
-            params = [to_cpu(p) for p in params]
+            params = [to_gpu(p) for p in params]
 
         with open(file_name, 'wb') as f:
             pickle.dump(params, f)

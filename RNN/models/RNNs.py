@@ -154,11 +154,11 @@ class TimeSoftmaxWithLoss:
             ts = ts.argmax(axis=2)
 
         mask = (ts != self.ignore_label)
-
        
         xs = xs.reshape(N * T, V)
         ts = ts.reshape(N * T)
         mask = mask.reshape(N * T)
+        
 
         ys = softmax(xs)
         ls = np.log(ys[np.arange(N * T), ts])
