@@ -16,8 +16,8 @@ batch_size = 20
 wordvec_size = 100
 hidden_size = 100  # RNN의 은닉 상태 벡터의 원소 수
 time_size = 35     # RNN을 펼치는 크기
-lr = 0.2
-max_epoch = 13
+lr = 0.3
+max_epoch = 9
 max_grad = 0.25
 
 

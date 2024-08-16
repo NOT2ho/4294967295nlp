@@ -21,7 +21,7 @@ model.load_params('Rnnlm.pkl')
 
 start_word = '나'
 start_id = word_to_id[start_word]
-skip_words = []
+skip_words = ['는']
 skip_ids = [word_to_id[w] for w in skip_words]
 
 word_ids = model.generate(start_id, skip_ids)

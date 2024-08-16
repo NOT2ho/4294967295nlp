@@ -18,7 +18,7 @@ class Rnnlm(BaseModel):
      [3] Tying Word Vectors and Word Classifiers (https://arxiv.org/pdf/1611.01462.pdf)
     '''
     def __init__(self, vocab_size=1905, wordvec_size=100,
-                 hidden_size=100, dropout_ratio=0.5):
+                 hidden_size=100, dropout_ratio=0.1):
         V, D, H = vocab_size, wordvec_size, hidden_size
         rn = np.random.randn
 
