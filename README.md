@@ -1,4 +1,6 @@
 ## [4294967295](https://www.youtube.com/@NOT2ho) 의 가사를 자동 생성합니다.
+## [마코프 체인 web version](https://www.4294967295.io/markov)
+#### 마코프 체인을 nodejs 로 옮겼습니다
 
 아직 만든 건⁰ 없지만  
 새로 만들 때마다 커밋¹합니다.  
