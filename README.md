@@ -1,7 +1,7 @@
 ## [4294967295](https://www.youtube.com/@NOT2ho) 의 가사를 자동 생성합니다.
 
 ## [마코프 체인 web version](https://www.4294967295.io/markov)
-## [형태소 분석기 (이제 빠름, 하지만 부정확함)](https://github.com/NOT2ho/notPOS_kr)
+## [형태소 분석기 npm package (이제 빠름, 하지만 부정확함)](https://www.npmjs.com/package/notpos_kr)
 
 #### 마코프 체인을 nodejs 로 옮겼습니다: 아직 빠른 형태소 분석기는 안 넣었습니다
 
