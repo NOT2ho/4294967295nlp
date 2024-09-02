@@ -22,6 +22,10 @@ fwd = Map.findWithDefault (False, NA, Null)
 lnull = Data.List.null
 keys = Map.keys
 elems = Map.elems
+{-
+acOutput :: Trie -> Trie -> [Char]
+acOutput (Node a) (Node b) = (\[(b,t,s)]->s) (elems a) ++  keys b
+acOutput (Node a) Null = (\[(b,t,s)]->s) (elems a)-}
 
 trieInsert :: [Char] -> Output -> Trie -> Trie
 trieInsert [] cl t = t
@@ -40,8 +44,5 @@ trieInsert (w:ws) cl (Node m)
 
 acInsert :: Output -> Trie -> Trie
 acInsert (Pos (word, pos)) = trieInsert word (Pos (word, pos) )
---acSearch :: [Char] -> Trie -> Map Int [Char]
-{-
-acOutput :: Trie -> Trie -> [Char]
-acOutput (Node a) (Node b) = (\[(b,t,s)]->s) (elems a) ++  keys b
-acOutput (Node a) Null = (\[(b,t,s)]->s) (elems a)-}
+
+asSearch :: [Char] -> Trie -> Map Int Output
