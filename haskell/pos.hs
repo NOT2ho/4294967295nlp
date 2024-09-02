@@ -24,7 +24,8 @@ keys = Map.keys
 elems = Map.elems
 {-
 acOutput :: Trie -> Trie -> [Char]
-acOutput (Node a) (Node b) = (\[(b,t,s)]->s) (elems a) ++  keys b
+acOutput (Node a) (NacSearch str t = 
+ode b) = (\[(b,t,s)]->s) (elems a) ++  keys b
 acOutput (Node a) Null = (\[(b,t,s)]->s) (elems a)-}
 
 trieInsert :: [Char] -> Output -> Trie -> Trie
@@ -44,5 +45,24 @@ trieInsert (w:ws) cl (Node m)
 
 acInsert :: Output -> Trie -> Trie
 acInsert (Pos (word, pos)) = trieInsert word (Pos (word, pos) )
+ 
 
-asSearch :: [Char] -> Trie -> Map Int Output
+acGo :: Char -> Trie -> Trie
+acGo c (Node m)
+    | member c m = 
+        let (b,o,t) = fwd c m in
+            t
+    | otherwise = Null
+acGo c Null = Null
+
+acSearch :: [Char] -> Trie -> Map Int Output
+acSearch (s:ss) (Node m) = do
+    let nextNode = acGo s (Node m) 
+    case nextNode of
+        Null -> acSearch ss (acFail $ Node m)
+        _ -> 
+            let (b,Pos(word, pos),nextTrie) = fwd s m in
+            if not b then acSearch ss nextTrie else st (Data.List.length word) $ Pos(word, pos)
+
+acFail :: Trie -> Trie
+acFail (Node m) = Null
