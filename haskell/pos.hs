@@ -20,13 +20,10 @@ ins = Map.insert
 fwd :: Char -> Map Char (Bool, Output, Trie) -> (Bool, Output, Trie)
 fwd = Map.findWithDefault (False, NA, Null)
 lnull = Data.List.null
+llength :: [] a -> Int
+llength = Data.List.length
 keys = Map.keys
 elems = Map.elems
-{-
-acOutput :: Trie -> Trie -> [Char]
-acOutput (Node a) (NacSearch str t = 
-ode b) = (\[(b,t,s)]->s) (elems a) ++  keys b
-acOutput (Node a) Null = (\[(b,t,s)]->s) (elems a)-}
 
 trieInsert :: [Char] -> Output -> Trie -> Trie
 trieInsert [] cl t = t
@@ -55,14 +52,15 @@ acGo c (Node m)
     | otherwise = Null
 acGo c Null = Null
 
-acSearch :: [Char] -> Trie -> Map Int Output
+acSearch :: [Char] -> Trie -> Maybe (Map Int Output)
 acSearch (s:ss) (Node m) = do
     let nextNode = acGo s (Node m) 
     case nextNode of
         Null -> acSearch ss (acFail $ Node m)
         _ -> 
             let (b,Pos(word, pos),nextTrie) = fwd s m in
-            if not b then acSearch ss nextTrie else st (Data.List.length word) $ Pos(word, pos)
+            if not b then acSearch ss nextTrie else Just $ st (llength word) $ Pos(word, pos)
+acSearch s Null = Nothing
 
 acFail :: Trie -> Trie
 acFail (Node m) = Null
