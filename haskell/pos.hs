@@ -5,70 +5,89 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Sequence
 
-data Trie = Node (Map Char (Bool, Output, Trie, Trie))
+data Trie = Root Childs
+            | Node Char Bool (Maybe Output) Fail Childs
             | Null
             deriving (Show)
+type Fail = Trie
+type Childs = Map Char Trie
+type Output = ([Char], Pos)
+type Pos = [Char]
 
-data Output = Pos ([Char], [Char])
-            | NA
-            deriving (Show)
 st = Map.singleton
-member :: Char -> Map Char a -> Bool
 member = Map.member
 notMember = Map.notMember
+ins :: Char -> a -> Map Char a -> Map Char a
 ins = Map.insert
-fwd :: Char -> Map Char (Bool, Output, Trie, Trie) -> (Bool, Output, Trie, Trie)
-fwd = Map.findWithDefault (False, NA, Null, Null)
+fwd = Map.findWithDefault Null
 lnull = Data.List.null
 llength :: [] a -> Int
 llength = Data.List.length
 keys = Map.keys
 elems = Map.elems
+qct = Data.Sequence.singleton
+stake = Data.Sequence.take
 
-trieInsert :: [Char] -> Output -> Trie -> Trie
-trieInsert [] cl t = t
-trieInsert (w:ws) cl Null 
-    | lnull ws = Node $ st w (True, cl, Null, Null)
-    | otherwise = Node $ st w (False, NA, trieInsert ws cl Null, Null)
-trieInsert (w:ws) cl (Node m)
-    | member w m=
-        let (b,o,t, f) = fwd w m in
-        Node $ ins w (lnull ws || b, 
-                        if lnull ws || b then o else NA,
-                        trieInsert ws cl t,
-                        f) m
-    | notMember w m = Node $ ins w (lnull ws, 
-                                     if lnull ws then cl else NA, 
-                                   trieInsert ws cl Null,
-                                   Null) m
+trieInsert :: [Char] -> Maybe Output -> Trie -> Trie
+trieInsert [] _ t = t
+trieInsert (w:ws) output Null
+    | lnull ws =  Node w True output Null Map.empty
+    | otherwise = Node w False Nothing Null $ st (head ws) $ trieInsert ws output Null
+
+trieInsert (w:ws) output (Root m)
+    | Map.null m =
+        Root $ st w $ trieInsert (w:ws) output Null
+    | member w m =
+        let cm = fwd w m in
+        let newCm = trieInsert ws output cm in
+        Root (ins w newCm m)
+    | notMember w m =
+        let cm = Node w (lnull ws) (if lnull ws then output else Nothing) Null Map.empty in
+        let newCm = trieInsert ws output cm in
+        Root (ins w newCm m)
+trieInsert (w:ws) output (Node c b o f m)
+    | Map.null m =
+        Node c b o f $ st w $ trieInsert (w:ws) output Null
+    | member w m =
+        let cm = fwd w m in
+        let newCm = trieInsert ws output cm in
+        Node c b o f (ins w newCm m)
+    | notMember w m =
+        let cm = Node w (lnull ws) (if lnull ws then output else Nothing) Null Map.empty in
+        let newCm = trieInsert ws output cm in
+        Node c b o f (ins w newCm m)
+
 
 acInsert :: Output -> Trie -> Trie
-acInsert (Pos (word, pos)) = trieInsert word (Pos (word, pos) )
- 
+acInsert (word, pos) = trieInsert word (Just (word, pos))
+
 
 acGo :: Char -> Trie -> Trie
-acGo c (Node m)
-    | member c m = 
-        let (b,o,t, f) = fwd c m in
+acGo char (Node c b o t m)
+    | member c m =
+        let (b,o,t, f) = fwd char m in
             t
     | otherwise = Null
 acGo c Null = Null
 
 
 acSearch :: [Char] -> Trie -> Maybe (Map Int Output)
-acSearch (s:ss) (Node m) = do
-    let nextNode = acGo s (Node m) 
+acSearch (s:ss) (Node c b o t m) = do
+    let nextNode = acGo s (Node c b o t m)
+    let (b,Output(word, pos),nextTrie, f) = fwd s m
     case nextNode of
-        Null -> let (b,Pos(word, pos),nextTrie, f) = fwd s m in
-            acSearch ss f
-        _ -> 
-            let (b,Pos(word, pos),nextTrie, f) = fwd s m in
-            if not b then acSearch ss nextTrie else Just $ st (llength word) $ Pos(word, pos)
+        Null -> acSearch ss f
+        _ -> if not b then
+            acSearch ss nextTrie
+            else Just $ st (llength word) $ Output (word, pos)
 acSearch s Null = Nothing
 
-acFail :: [Char] -> Trie -> Trie
-acFail str Null = Null
-acFail (x:xs) (Node m) = do
-    let que = empty 
-    let (b,o,t,f) = fwd x m in
-        t
+{-
+acFail ::  Trie -> Trie
+acFail Null = Null
+acFail Root = do
+    let (b, Just (w,p),t,f) = fwd x m
+    let emptyQue = empty
+    let que = emptyQue >< qct (keys m)
+
+-}
