@@ -89,6 +89,11 @@ acGo c root = Just root
 
 
 acSearch :: [Char] -> Trie -> Maybe (Map Int Output)
+acSearch (s:ss) (Root m) = 
+    let thisNode = acGo s (Root m) in
+    let nextTrie = fwd IfYouSeeThisThenYouArePoorCat s m in
+        acSearch ss nextTrie
+
 acSearch (s:ss) (Node b o f m) = do
     let thisNode = acGo s (Node b o f m)
     let nextTrie = fwd IfYouSeeThisThenYouArePoorCat s m
@@ -96,6 +101,7 @@ acSearch (s:ss) (Node b o f m) = do
         then Just $ st 1 (fromMaybe ("나오면 안되는값임","IfYouSeeThisThenYouArePoorCat") o) 
         else acSearch ss nextTrie)
 acSearch s Null = Just $ st 666 ("나오면 안되는값임","IfYouSeeThisThenYouArePoorCat")
+acSearch _ _= Just $ st 4294967295 ("","")
 
 
 acFail:: Trie -> Seq Trie -> Maybe Trie
@@ -133,3 +139,7 @@ acFail (Node bool output fail edge) (q :<| qs)
                                 
 
 acFail _ _ = Just IfYouSeeThisThenYouArePoorCat
+
+insertManyWords:: [Output] -> Trie -> Trie
+insertManyWords (o:os) trie = acInsert o (insertManyWords os trie)
+insertManyWords _ _ = Null
