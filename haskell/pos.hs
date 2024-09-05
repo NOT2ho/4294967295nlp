@@ -143,3 +143,6 @@ acFail _ _ = Just IfYouSeeThisThenYouArePoorCat
 insertManyWords:: [Output] -> Trie -> Trie
 insertManyWords (o:os) trie = acInsert o (insertManyWords os trie)
 insertManyWords _ _ = Null
+
+realInput :: [Output] -> Trie
+realInput i = fromMaybe IfYouSeeThisThenYouArePoorCat (acFail (insertManyWords i Null) empty)
