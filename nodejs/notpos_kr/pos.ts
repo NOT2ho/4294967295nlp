@@ -80,7 +80,7 @@ class AhoCorasick {
             const char = text[i];
 
             while (currentNode !== null && !currentNode.child.get(char)) {
-                currentNode = currentNode.fail;
+                   currentNode = currentNode.fail;
             }
     
             currentNode = currentNode ? currentNode.child.get(char) || this.root : this.root;

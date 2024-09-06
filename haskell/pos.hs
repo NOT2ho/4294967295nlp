@@ -7,10 +7,10 @@ import Data.Sequence
 import Data.Maybe(fromMaybe)
 
 data Trie = Root Childs
-            | Node Bool (Maybe Output) Fail Childs
+            | Node Bool (Maybe Output) Childs
             | Null
             | IfYouSeeThisThenYouArePoorCat
-            deriving (Show, Eq)
+            deriving (Show, Eq, Ord)
 type Fail = Trie
 type Childs = Map Char Trie
 type Output = ([Char], Pos)
@@ -20,7 +20,7 @@ st = Map.singleton
 member = Map.member
 notMember :: Char -> Map Char a -> Bool
 notMember = Map.notMember
-ins :: Char -> a -> Map Char a -> Map Char a
+ins :: Ord k => k -> a -> Map k a -> Map k a
 ins = Map.insert
 fwd :: Ord k => a -> k -> Map k a -> a
 fwd = Map.findWithDefault
@@ -41,13 +41,13 @@ trieInsert [] output t =
     case t of
         Null -> IfYouSeeThisThenYouArePoorCat
         Root m -> IfYouSeeThisThenYouArePoorCat
-        Node b o f m -> Node True output f m
+        Node b o m -> Node True output m
 
 
 trieInsert (w:ws) output Null
     | lnull (w:ws) = Null
-    | lnull ws =  Node True output Null (st w Null)
-    | otherwise = Node False Nothing Null $ st w $ trieInsert ws output Null
+    | lnull ws =  Node True output (st w Null)
+    | otherwise = Node False Nothing $ st w $ trieInsert ws output Null
 
 trieInsert (w:ws) output (Root m)
     | member w m =
@@ -57,22 +57,20 @@ trieInsert (w:ws) output (Root m)
     | notMember w m =
         let nextNode = Node (lnull ws)
                                 (if lnull ws then output else Nothing)
-                                Null
                                 Map.empty in
         let thisNode = trieInsert ws output nextNode in
         Root (ins w thisNode m)
-trieInsert (w:ws) output (Node b o f m)
+trieInsert (w:ws) output (Node b o m)
     | member w m =
         let nextNode = fwd IfYouSeeThisThenYouArePoorCat w m in
         let thisNode = trieInsert ws output nextNode in
-        Node b o f (ins w thisNode m)
+        Node b o (ins w thisNode m)
     | notMember w m =
         let nextNode = Node (lnull ws)
                                 (if lnull ws then output else Nothing)
-                                Null
                                 Map.empty in
         let thisNode = trieInsert ws output nextNode in
-        Node b o f (ins w thisNode m)
+        Node b o (ins w thisNode m)
 
 
 
@@ -80,69 +78,72 @@ acInsert :: Output -> Trie -> Trie
 acInsert (word, pos) = trieInsert word (Just (word, pos))
 
 
-acGo :: Char -> Trie -> Maybe Trie
-acGo char (Node b o f m)
-    | member char m =
-        Just $ fwd IfYouSeeThisThenYouArePoorCat char m
-    | otherwise = Nothing
-acGo c root = Just root
+acGo :: Char -> Map Trie Fail -> Trie -> Trie
+acGo char fail (Node b o m)
+    | member char m = fwd IfYouSeeThisThenYouArePoorCat char m
+    | otherwise = fwd IfYouSeeThisThenYouArePoorCat (Node b o m) fail
+acGo c trie (Root m)
+    | member c m = fwd IfYouSeeThisThenYouArePoorCat c m
+    | otherwise = Null
 
 
-acSearch :: [Char] -> Trie -> Maybe (Map Int Output)
-acSearch (s:ss) (Root m) = 
-    let thisNode = acGo s (Root m) in
-    let nextTrie = fwd IfYouSeeThisThenYouArePoorCat s m in
-        acSearch ss nextTrie
-
-acSearch (s:ss) (Node b o f m) = do
-    let thisNode = acGo s (Node b o f m)
-    let nextTrie = fwd IfYouSeeThisThenYouArePoorCat s m
-    (if b 
-        then Just $ st 1 (fromMaybe ("나오면 안되는값임","IfYouSeeThisThenYouArePoorCat") o) 
-        else acSearch ss nextTrie)
-acSearch s Null = Just $ st 666 ("나오면 안되는값임","IfYouSeeThisThenYouArePoorCat")
-acSearch _ _= Just $ st 4294967295 ("","")
+acSearch :: [Char] -> Trie -> Trie -> Map Trie Fail -> Int -> Map Int Output -> Map Int Output
+acSearch (s:ss) root (Root m) fail idx mio =
+    let thisNode = Root m in
+    let nextNode = acGo s fail thisNode in
+        if nextNode == Null
+            then acSearch ss root (Root m) fail (idx+1) mio
+            else acSearch ss root nextNode fail (idx+1) mio
 
 
-acFail:: Trie -> Seq Trie -> Maybe Trie
-acFail _ Empty = Nothing
-acFail (Root edge) que =
+acSearch (s:ss) root (Node b o m) fail idx mio =
+    let thisNode = Node b o m in
+    let nextNode = acGo s fail thisNode in
+        (if 
+            b 
+            then (
+                if 
+                m /= Map.empty
+                    then acSearch ss root nextNode fail
+                        (idx+1)
+                        (ins idx (fromMaybe ("불쌍", "IfYouSeeThisThenYouArePoorCat") o ) mio )
+                    else acSearch (s:ss) root root fail
+                        (idx+1)
+                        (ins idx (fromMaybe ("불쌍", "IfYouSeeThisThenYouArePoorCat") o ) mio )) 
+        else (
+             if 
+                m /= Map.empty
+                    then acSearch ss root nextNode fail (idx+1) mio
+                    else acSearch (s:ss) root root fail (idx+1) mio))
+
+acSearch [] root (Node b o m) fail idx mio = if b then ins idx (fromMaybe ("불쌍", "IfYouSeeThisThenYouArePoorCat") o ) mio else mio
+
+acSearch _ _ t f idx mio = mio
+
+acFail:: Seq Trie -> Map Trie Fail -> Map Trie Fail
+acFail Empty mtf = mtf
+acFail ((Root edge) :<| que) mtf =
     let root = Root edge in
-        let (h:t) = keys edge in
-            let Node b o f childEdge = fwd Null h edge in
-                    case h:t of
-                        [_] ->
-                            Nothing
-                        _ -> acFail (
-                                Node b o f
-                                (ins h (Node b o root childEdge) edge))
-                                (que |> Node b o f childEdge)
+    let (newque, newmtf) = Map.foldr (\t (oq, om) -> (oq |> t, ins t root om)) (que, mtf) edge in
+    acFail newque newmtf
 
-
-acFail (Node bool output fail edge) (q :<| qs)
-    | q == Node bool output fail edge =
-        let thisNode = Node bool output fail edge in
-            let (h:t) = keys edge in
-                let Node b o f childEdge = fwd IfYouSeeThisThenYouArePoorCat h edge in
-                    case h:t of
-                        [_] ->
-                            Nothing
-                        _ ->
-                            acFail (
-                                Node b o f
-                                (ins h (Node b o
-                                        (fromMaybe IfYouSeeThisThenYouArePoorCat (acGo h fail))
-                                        childEdge)
-                                edge)
-                                )
-                                (qs|> Node b o f childEdge)
-                                
-
-acFail _ _ = Just IfYouSeeThisThenYouArePoorCat
+acFail ((Node b o edge) :<| que) mtf =
+    let node = Node b o edge in
+    let (newque, newmtf) = Map.foldrWithKey (\k t (oq, om) -> (oq |> t, ins t (acGo k mtf node) om)) (que, mtf) edge in
+    acFail newque newmtf
 
 insertManyWords:: [Output] -> Trie -> Trie
 insertManyWords (o:os) trie = acInsert o (insertManyWords os trie)
-insertManyWords _ _ = Null
+insertManyWords _ _ = Root Map.empty
 
-realInput :: [Output] -> Trie
-realInput i = fromMaybe IfYouSeeThisThenYouArePoorCat (acFail (insertManyWords i Null) empty)
+catSearch :: [] Char -> [Output] -> Map Int Output
+catSearch c o =
+    let trie = insertManyWords o Null in
+    let failTrie = acFail (Data.Sequence.singleton trie) $ st trie Null in
+        acSearch c trie trie failTrie 0 Map.empty
+
+catTest :: [] Char -> [Output] -> Trie
+catTest c o =
+    let trie = insertManyWords o Null in
+    let failTrie = acFail (Data.Sequence.singleton trie) $ st trie Null in
+        acGo (head c) failTrie trie
