@@ -1,10 +1,14 @@
-
-import Data.List
-import Data.Map.Internal.Debug
+import qualified Data.List
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Sequence
 import Data.Maybe(fromMaybe)
+import GHC.Generics
+import System.IO
+import System.Exit (exitFailure)
+import Data.ByteString (ByteString, hGetSome, empty)
+import qualified Data.ByteString.Lazy as BL
+
 
 data Trie = Root Childs
             | Node Bool (Maybe Output) Childs
@@ -15,6 +19,7 @@ type Fail = Trie
 type Childs = Map Char Trie
 type Output = ([Char], Pos)
 type Pos = [Char]
+
 
 st = Map.singleton
 member = Map.member
@@ -99,19 +104,19 @@ acSearch (s:ss) root (Root m) fail idx mio =
 acSearch (s:ss) root (Node b o m) fail idx mio =
     let thisNode = Node b o m in
     let nextNode = acGo s fail thisNode in
-        (if 
-            b 
+        (if
+            b
             then (
-                if 
+                if
                 m /= Map.empty
                     then acSearch ss root nextNode fail
                         (idx+1)
                         (ins idx (fromMaybe ("불쌍", "IfYouSeeThisThenYouArePoorCat") o ) mio )
                     else acSearch (s:ss) root root fail
                         (idx+1)
-                        (ins idx (fromMaybe ("불쌍", "IfYouSeeThisThenYouArePoorCat") o ) mio )) 
+                        (ins idx (fromMaybe ("불쌍", "IfYouSeeThisThenYouArePoorCat") o ) mio ))
         else (
-             if 
+             if
                 m /= Map.empty
                     then acSearch ss root nextNode fail (idx+1) mio
                     else acSearch (s:ss) root root fail (idx+1) mio))
@@ -142,8 +147,17 @@ catSearch c o =
     let failTrie = acFail (Data.Sequence.singleton trie) $ st trie Null in
         acSearch c trie trie failTrie 0 Map.empty
 
-catTest :: [] Char -> [Output] -> Trie
-catTest c o =
-    let trie = insertManyWords o Null in
-    let failTrie = acFail (Data.Sequence.singleton trie) $ st trie Null in
-        acGo (head c) failTrie trie
+ioCat :: IO()
+ioCat = do
+    str <- getLine
+    csv <- readFile "./dic_.csv"
+    print $ catSearch str (tuples $ split csv)
+
+split :: String -> [String]
+split str
+    | Prelude.null str = []
+    | otherwise = takeWhile (/=',') str : split (if Prelude.null (dropWhile (/=',') str) then [] else tail (dropWhile (/=',') str))
+
+tuples :: [String] -> [([Char], [Char])]
+tuples (s:ss:sss) = (s,ss) :  tuples sss
+tuples [] = []
